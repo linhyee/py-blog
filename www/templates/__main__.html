@@ -1,0 +1,53 @@
+{% extends '__base__.html' %}
+
+{% block title %} Kren {% endblock %}
+
+{% block content %}
+
+<div class="uk-width-1-1">
+    <div class="uk-height-medium uk-flex uk-flex-column uk-flex-center uk-flex-middle uk-background-cover" data-src="http://www.uikitcss.com/skin/ukv3/images/light.jpg" uk-img>
+        <h1>Mr Kren</h1>
+        <nav class="uk-navbar-container uk-navbar-transparent" uk-navbar>
+            <div class="uk-navbar-left">
+        
+                <ul class="uk-navbar-nav">
+                    <li class="uk-active"><a href="/">文章</a></li>
+                    <li><a href="/naked">风月</a></li>
+                    {% if __user__ %}
+                    <li>
+                        <a href="#">管理</a>
+                        <div class="uk-navbar-dropdown">
+                            <ul class="uk-nav uk-navbar-dropdown-nav">
+                                <li><a href="/manage/blogs">文章管理</a></li>
+                                <li><a href="/manage/comments">评论管理</a></li>
+                                <li><a href="/manage/users">用户管理</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    {% endif %}
+                </ul>
+        
+            </div>
+        </nav>
+    </div>
+    <div class="uk-container uk-margin-top">
+
+        <!-- main -->
+
+        {% block main %}
+        {% endblock %}
+
+        <!-- /main -->
+    </div>
+
+    <div class="uk-container uk-margin">
+        <hr>
+        <p class="uk-text-center">©2021, kren contributors. | Powered by x &nbsp;
+            {% if not __user__ %}
+            | <a href="/signin">登录</a> <a href="/register">注册</a>
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+{% endblock %}

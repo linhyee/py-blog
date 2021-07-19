@@ -1,0 +1,61 @@
+{% extends '__base__.html' %}
+
+{% block title %} Kren {% endblock %}
+
+{% block content %}
+
+<div class="uk-height-1-1">
+    <form class="uk-position-center uk-overlay uk-overlay-default uk-background-muted" onsubmit="return false;">
+        <div class="uk-margin">
+            <div class="uk-inline">
+                <span class="uk-form-icon" uk-icon="icon: user"></span><input class="uk-input" type="text" id="email" placeholder="邮箱">
+            </div>
+        </div>
+        <div class="uk-margin">
+            <div class="uk-inline">
+                <span class="uk-form-icon" uk-icon="icon: lock"></span><input class="uk-input" type="text" id="passwd" placeholder="口令">
+            </div>
+        </div>
+        <div class="uk-margin">
+            <button type="submit" class="uk-button uk-button-primary" onclick="signin()">登入</button>
+        </div>
+    </form>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha1/0.6.0/sha1.min.js"></script>
+<script>
+function signin () {
+    let email = document.getElementById('email').value.trim()
+    let passwd = document.getElementById('passwd').value
+    if (email === '' || passwd === '') {
+        UIkit.notification('邮箱或密码不能为空', 'danger');
+        return false
+    }
+    if (passwd !== '') {
+        passwd = sha1(email + ':' + passwd).toString()
+    }
+    fetch('/api/authenticate', {
+        method: 'POST',
+        body: JSON.stringify({
+            email: document.getElementById('email').value.trim(),
+            passwd: passwd
+        }),
+        headers: new Headers({
+            'Content-type': 'application/json'
+        })
+    }).then(response => response.json())
+    .catch(error =>{
+        UIkit.notification('请求异常', 'danger');
+    })
+    .then(data => {
+        if (data.hasOwnProperty('error') && data.error!=='') {
+            UIkit.notification(data.message, 'danger')
+        } else {
+            location.assign('/')
+        }
+    })
+    return true
+}
+</script>
+
+{% endblock %}

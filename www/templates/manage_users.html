@@ -1,0 +1,62 @@
+{% extends '__main__.html' %}
+
+{% block title %}用户管理{% endblock %}
+
+{% block beforehead %}
+
+<script>
+function delUser(id) {
+    if (id > 0) {
+        UIkit.modal.confirm('是否确定删除用户?', {labels:{ok:'确定', cancel:'取消'}}).then( () => {
+            fetch('/api/user/'+id+'/delete', { method:'GET'}).then(res => res.json())
+            .catch(error => { UIkit.notification(error, 'danger') })
+            .then(data => {
+                if (data.hasOwnProperty('error') && data.error !== ''){
+                    UIkit.notification(data.message)
+                } else {
+                    UIkit.notification('删除成功', 'success')
+                    setTimeout(()=> location.reload(), 1000)
+                }
+            })
+        }, () => {
+            console.log('reject')
+        })
+    }
+}
+</script>
+
+{% endblock %}
+
+{% block main %}
+<ul class="uk-breadcrumb">
+    <li><a href="#">管理</a></li>
+    <li><span>用户管理</span></li>
+</ul>
+<table class="uk-table uk-table-hover uk-table-striped">
+    <thead>
+        <tr>
+            <th>名字</th>
+            <th>邮箱</th>
+            <th>是否管理员</th>
+            <th>注册时间</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.name }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ '是' if user.admin == 1 else '否' }}</td>
+            <td>{{ user.created_at | formattime }}</td>
+            <td><a href="javascript:delUser({{ user.id }});" class="uk-icon-link" uk-icon="trash"></a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- 分页 -->
+<div>{{ pagination | safe}}</div>
+<!-- END -->
+
+{% endblock %}

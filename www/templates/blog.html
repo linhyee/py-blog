@@ -1,0 +1,138 @@
+{% extends '__main__.html' %}
+
+{% block title %} {{ blog.name }} {% endblock %}
+
+{% block beforehead %}
+
+<script>
+let replyTo = 0
+
+function submitComment() {
+   let content = document.getElementById('my-comment').value
+   if (content.trim() === '' || content.trim().length < 5) {
+      UIkit.notification('请写评论内容并且评论内容不少于5个字符', 'danger')
+      return
+   }
+   fetch('/api/blog/{{blog.id}}/comments', {
+        method: 'POST',
+        body: JSON.stringify({
+            parent_id: replyTo,
+            blog_id: '{{ blog.id }}',
+            content: content,
+        }),
+        headers: new Headers({
+            'Content-type': 'application/json'
+        })
+    }).then(response => response.json())
+    .catch(error => {
+        UIkit.notification('请求异常', 'danger')
+    })
+    .then(data => {
+        console.log(data)
+        if (data.hasOwnProperty('error') && data.error !== '') {
+            UIkit.notification(data.message, 'danger')
+        } else {
+           UIkit.notification('评论成功!', 'success')
+           setTimeout(()=> location.reload(), 1000)
+        }
+    })
+}
+
+function reply(to, id) {
+   let c =document.getElementById('my-comment')
+   c.value = '回复'+to+':'
+   replyTo = id
+   c.focus();
+}
+</script>
+
+{% endblock %}
+
+{% block main %}
+
+<ul class="uk-breadcrumb">
+   <li><a href="/">文章 </a></li>
+   <li><span>详情</span></li>
+</ul>
+
+<article class="uk-article">
+   <h2>{{ blog.name }}</h2>
+   <p class="uk-article-meta">发表于{{ blog.created_at | datetime }}</p>
+   <p>{{ blog.html_content | safe }}</p>
+</article>
+
+
+<hr class="uk-margin">
+
+<article class="uk-comment">
+   <a name="comment"></a>
+   <header class="uk-comment-header uk-grid-medium uk-flex-middle" uk-grid>
+      <h4 class="uk-comment-title">评论</h4>
+   </header>
+   <div class="uk-comment-body" onsubmit="return false;">
+      <form class="uk-form">
+         <div class="uk-margin"><textarea class="uk-textarea" id="my-comment" rows="6" placeholder="说点儿什么呢?"></textarea></div>
+         <div class="uk-margin">
+            <button type="submit" class="uk-button uk-button-primary" onclick="submitComment()">发表评论</button>
+         </div>
+      </form>
+   </div>
+</article>
+
+<ul class="uk-comment-list">
+   {% for c in comments %}
+   <li class="uk-margin-small-top">
+      <article class="uk-comment uk-visible-toggle uk-background-muted" tabindex="-1">
+         <header class="uk-comment-header uk-position-relative">
+            <div class="uk-grid-medium uk-flex-middle" uk-grid>
+                <div class="uk-width-auto">
+                    <img class="uk-comment-avatar" src="/static/images/avatar.jpg" width="80" height="80" alt="">
+                </div>
+                <div class="uk-width-expand">
+                    <h4 class="uk-comment-title uk-margin-remove"><a class="uk-link-reset" href="javascript:;">{{ c.user_name }}</a></h4>
+                    <ul class="uk-comment-meta uk-subnav uk-subnav-divider uk-margin-remove-top">
+                        <li>{{ c.created_at | datetime }}</li>
+                        <li><a href="#comment" onclick="reply('{{ c.user_name }}', {{ c.id }})">回复</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+        <div class="uk-comment-body">
+           {{ c.html_content | safe }}
+        </div>
+      </article>
+
+      {% if c.replies %}
+
+      <ul class="uk-margin-small-top">
+         {% for cc in c.replies %}
+         <li class="uk-margin-small-top">
+            <article class="uk-comment uk-visible-toggle uk-background-muted" tabindex="-1">
+               <header class="uk-comment-header uk-position-relative">
+                  <div class="uk-grid-medium uk-flex-middle" uk-grid>
+                      <div class="uk-width-auto">
+                          <img class="uk-comment-avatar" src="/static/images/avatar.jpg" width="80" height="80" alt="">
+                      </div>
+                      <div class="uk-width-expand">
+                          <h4 class="uk-comment-title uk-margin-remove"><a class="uk-link-reset" href="javascript:;">{{ cc.user_name }}</a></h4>
+                          <ul class="uk-comment-meta uk-subnav uk-subnav-divider uk-margin-remove-top">
+                              <li>{{ cc.created_at | datetime }}</li>
+                              <li><a href="#comment" onclick="reply('{{ cc.user_name }}', {{ cc.id }})">回复</a></li>
+                          </ul>
+                      </div>
+                  </div>
+              </header>
+              <div class="uk-comment-body">
+                 {{ cc.html_content | safe }}
+              </div>
+            </article>      
+         </li>
+         {% endfor %}
+      </ul>
+
+      {% endif %}
+   </li>
+   {% endfor %}
+</ul>
+
+{% endblock %}

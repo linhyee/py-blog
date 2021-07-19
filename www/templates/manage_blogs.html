@@ -1,0 +1,68 @@
+{% extends '__main__.html' %}
+
+{% block title %}文章列表{% endblock %}
+
+{% block beforehead %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+function delBlog() {
+    let ids = []
+    $('tbody .uk-checkbox:checked').each((i, v) => ids.push(parseInt($(v).val())))
+    if (ids.length > 0) {
+        $.ajax({
+            url:'/api/blogs/delete',
+            type: 'post',
+            contentType: 'application/json',
+            data: JSON.stringify({id: ids}),
+            dataType: 'json',
+            success: res => {
+                if (res.hasOwnProperty('error') && res.error!=='') {
+                    UIkit.notification(res.error, 'danger')
+                } else {
+                    UIkit.notification('删除成功', 'success')
+                    setTimeout( () => location.reload(), 1000)
+                }
+            }
+        })
+    }
+}
+</script>
+{% endblock %}
+
+{% block main %}
+<ul class="uk-breadcrumb">
+    <li><a href="#">管理</a></li>
+    <li><span>文章管理</span></li>
+</ul>
+
+<div class="uk-margin">
+    <a href="/manage/blogs/create" class="uk-button uk-button-primary">新建文章</a>
+    <button class="uk-button uk-button-danger" onclick="delBlog()">删除</button>
+</div>
+
+<table class="uk-table uk-table-hover uk-table-striped">
+    <thead>
+        <tr>
+            <th><input class="uk-checkbox" type="checkbox" onchange="$('tbody .uk-checkbox').prop('checked', $(this).prop('checked'))"></th>
+            <th class="uk-table-expand">标题/摘要</th>
+            <th class="uk-width-small">作者</th>
+            <th>创建时间</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for blog in blogs %}
+        <tr>
+            <td><input class="uk-checkbox" type="checkbox" value="{{ blog.id }}"></td>
+            <td class="uk-table-link"><a class="uk-link-reset" href="/manage/blogs/{{ blog.id }}">{{ blog.name }}</a></td>
+            <td>{{ blog.user_name }}</td>
+            <td>{{ blog.created_at | formattime }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- 分页 -->
+<div>{{ pagination | safe}}</div>
+<!-- END -->
+
+{% endblock %}

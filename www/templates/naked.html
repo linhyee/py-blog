@@ -1,0 +1,12 @@
+{% extends '__main__.html' %}
+
+{% block title %} Naked {% endblock %}
+
+{% block main %}
+<ul class="uk-breadcrumb">
+    <li><a href="/naked">风月</a></li>
+    <li><span>美图</span></li>
+</ul>
+<img data-src="{{ image_url }}" data-width="" data-height="" alt="" uk-img>
+
+{% endblock %}

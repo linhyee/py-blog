@@ -1,0 +1,92 @@
+{% extends '__main__.html' %}
+
+{% block title %}注册{% endblock %}
+
+{% block beforehead %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha1/0.6.0/sha1.min.js"></script>
+<script>
+function register() {
+    let name = document.getElementById('name').value.trim()
+    let email = document.getElementById('email').value.trim()
+    let passwd = document.getElementById('passwd').value
+    let paswd2 = document.getElementById('paswd2').value
+    if (name=== '' || email === '' || passwd === '' || paswd2 =='') {
+        UIkit.notification('缺少必填字段', 'danger')
+        return false
+    }
+    if (!/^[a-z0-9\.\-\_]+\@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$/.test(email.toLowerCase())) {
+        UIkit.notification('电子邮箱格式不正确', 'danger')
+        return false
+    }
+    if (paswd2 != passwd) {
+        UIkit.notification('口令与重复口令不一致', 'danger')
+        return false
+    }
+
+    fetch('/api/register', {
+        method: 'POST',
+        body: JSON.stringify({
+            name: name,
+            email: email,
+            passwd: sha1(email+':'+passwd).toString(),
+        }),
+        headers: new Headers({
+            'Content-type': 'application/json'
+        })
+    }).then(response => response.json())
+    .catch(error => {
+        UIkit.notification('请求异常', 'danger')
+    })
+    .then(data => {
+        if (data.hasOwnProperty('error') && data.error!=="") {
+            UIkit.notification(data.message, 'danger')
+        } else {
+            location.assign('/')
+        }
+    })
+    return true
+}
+</script>
+
+{% endblock %}
+
+{% block main %}
+
+<form onsubmit="return false;">
+    <div class="uk-text-large">用户注册<span class="uk-text-small"> (带*的为必填内容)</span></div>
+
+    <div class="uk-margin">
+        <div class="uk-inline uk-width-1-1">
+            <span class="uk-form-icon" uk-icon="icon: user"></span>
+            <input class="uk-input" id="name" type="text" placeholder="*用户名字">
+        </div>
+    </div>
+
+    <div class="uk-margin">
+        <div class="uk-inline uk-width-1-1">
+            <span class="uk-form-icon" uk-icon="icon: mail"></span>
+            <input class="uk-input" id="email" type="text" placeholder="*电子邮件">
+        </div>
+    </div>
+
+    <div class="uk-margin">
+        <div class="uk-inline uk-width-1-1">
+            <span class="uk-form-icon" uk-icon="icon: lock"></span>
+            <input class="uk-input" id="passwd" type="text" placeholder="*输入口令">
+        </div>
+    </div>
+
+    <div class="uk-margin">
+        <div class="uk-inline uk-width-1-1">
+            <span class="uk-form-icon" uk-icon="icon: lock"></span>
+            <input class="uk-input" id="paswd2" type="text" placeholder="*重复口令">
+        </div>
+    </div>
+
+    <div class="uk-margin">
+        <button type="submit" class="uk-button uk-button-primary" onclick="register()"><i class="uk-icon-user"></i> 注册</button>
+    </div>
+</form>
+
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends '__main__.html' %}
+
+{% block main %}
+
+<ul class="uk-breadcrumb">
+    <li><a href="/">文章</a></li>
+    <li><span>列表</span></li>
+</ul>
+
+{% if blogs %}
+
+{% for blog in blogs %}
+
+<article class="uk-article">
+    <h3 class="uk-article-title">{{ blog.name }}</h3>
+    <p class="uk-article-meta">发表于{{ blog.created_at | datetime }}</p>
+    <p>{{ blog.summary }}</p>
+    <div class="uk-grid-small uk-child-with-auto" uk-grid>
+        <div>
+            <a class="uk-button uk-button-text" href="/blog/{{ blog.id }}">更多</a>
+        </div>
+        <div>
+            <a class="uk-button uk-button-text" href="#">评论({{ blog.comments_count }})</a>
+        </div>
+    </div>
+</article>
+
+{% endfor %}
+
+<div>{{ pagination | safe }}</div>
+
+{% else %}
+
+<div class="uk-height-medium uk-padding-small uk-padding-remove-left">这个人很懒什么, 也没有留下~~</div>
+
+{% endif %}
+
+{% endblock %}
