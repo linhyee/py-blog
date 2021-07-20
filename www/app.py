@@ -151,6 +151,9 @@ async def init_db(app):
         db=configs.db.database
     )
 
+async def close_db(app):
+    await orm.close_pool()
+
 logging.basicConfig(level=logging.INFO)
 
 app = web.Application(middlewares=[
@@ -162,4 +165,5 @@ init_jinja2(app, filters=dict(datetime=datetime_filter, formattime=format_timest
 add_routes(app, 'handlers')
 add_static(app)
 app.on_startup.append(init_db)
+app.on_cleanup.append(close_db)
 web.run_app(app, host='0.0.0.0', port=9000)
